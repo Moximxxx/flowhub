@@ -1,0 +1,29 @@
+name: Update Index
+on:
+  push:
+    paths: ['workflows/**', '!workflows/**/README.md']
+  workflow_dispatch:
+
+jobs:
+  update-index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update index.json
+        run: |
+          echo '{"workflows": [' > index.json
+          first=true
+          for dir in workflows/*/; do
+            name=$(basename "$dir")
+            meta="$dir/metadata.json"
+            if [ -f "$meta" ]; then
+              $first || echo ',' >> index.json
+              first=false
+              cat "$meta" >> index.json
+            fi
+          done
+          echo ']}' >> index.json
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "ci: update index.json"
+          file_pattern: index.json

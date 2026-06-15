@@ -1,0 +1,21 @@
+{
+  "_meta": {"source_adapter": "claude-code", "version": "1.0.0"},
+  "agents": [
+    {
+      "name": "code-reviewer",
+      "description": "Review code for quality and security",
+      "system_prompt": "You are a code reviewer. Check for bugs, security issues, and best practices.",
+      "tools": ["Read", "Glob", "Grep"],
+      "model": "sonnet"
+    }
+  ],
+  "mcp_servers": [
+    {
+      "name": "filesystem",
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/tmp"],
+      "enabled": true
+    }
+  ]
+}

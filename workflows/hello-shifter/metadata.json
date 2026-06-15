@@ -1,0 +1,10 @@
+{
+  "name": "hello-shifter",
+  "version": "0.1.0",
+  "author": "shifter",
+  "agent": "claude-code",
+  "tags": ["demo", "getting-started"],
+  "description": "A minimal demo workflow for Shifter — code review + basic MCP setup",
+  "downloads": 0,
+  "updated": "2026-06-16"
+}
