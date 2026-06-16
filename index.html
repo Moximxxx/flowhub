@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowHub — Shifter Workflow Marketplace</title>
+<style>
+  body { font-family: -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #eee; }
+  h1 { color: #7C3AED; }
+  .card { background: #16213e; border: 1px solid #7C3AED; border-radius: 8px; padding: 16px; margin: 12px 0; }
+  .tag { background: #7C3AED; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-right: 4px; }
+  a { color: #A78BFA; }
+  code { background: #0f3460; padding: 4px 8px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<h1>🌐 FlowHub</h1>
+<p>Zero-cost workflow marketplace for Shifter. Powered by GitHub.</p>
+<h2>📦 Install a workflow</h2>
+<code>shifter flow install &lt;name&gt;</code>
+<h2>🚀 Publish your workflow</h2>
+<code>shifter flow publish &lt;name&gt;</code>
+<p><a href="https://github.com/Moximxxx/flowhub">View on GitHub</a></p>
+<div id="workflows">Loading...</div>
+<script>
+fetch('index.json').then(r=>r.json()).then(d=>{
+  let h='';
+  d.workflows.forEach(w=>{
+    h+=`<div class="card"><h3>📦 ${w.name} <small>v${w.version}</small></h3>
+    <p>${w.description||''}</p>
+    <p>${(w.tags||[]).map(t=>'<span class="tag">'+t+'</span>').join(' ')}</p>
+    <code>shifter flow install ${w.name}</code></div>`;
+  });
+  document.getElementById('workflows').innerHTML=h||'No workflows yet.';
+});
+</script>
+</body>
+</html>
