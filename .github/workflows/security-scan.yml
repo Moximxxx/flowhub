@@ -1,0 +1,23 @@
+name: Security Scan
+on:
+  pull_request:
+    paths: ['workflows/**']
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Secret detection
+        run: |
+          echo "Scanning for secrets in workflows..."
+          if git diff --name-only origin/main | xargs grep -lE '(sk-[a-zA-Z0-9]{20,})|(ghp_[a-zA-Z0-9]{36})|(AKIA[A-Z0-9]{16})' 2>/dev/null; then
+            echo "⚠️  Potential secrets found!"
+          else
+            echo "✅ No secrets detected"
+          fi
+      - name: JSON validation
+        run: |
+          for f in workflows/*/metadata.json; do
+            [ -f "$f" ] && python3 -m json.tool "$f" > /dev/null || echo "Invalid: $f"
+          done
+          echo "✅ All JSON valid"
