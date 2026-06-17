@@ -3,36 +3,74 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FlowHub — Shifter Workflow Marketplace</title>
+<title>FlowHub — Shifter Workflow Registry</title>
 <style>
-  body { font-family: -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #eee; }
-  h1 { color: #7C3AED; }
-  .card { background: #16213e; border: 1px solid #7C3AED; border-radius: 8px; padding: 16px; margin: 12px 0; }
-  .tag { background: #7C3AED; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-right: 4px; }
-  a { color: #A78BFA; }
-  code { background: #0f3460; padding: 4px 8px; border-radius: 4px; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f1a; color: #e0e0e0; }
+header { background: #1a1a2e; border-bottom: 2px solid #7C3AED; padding: 24px 0; }
+header .container { max-width: 960px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
+h1 { color: #7C3AED; font-size: 28px; }
+.search-box { display: flex; gap: 8px; }
+.search-box input { padding: 8px 16px; border-radius: 6px; border: 1px solid #7C3AED; background: #0f0f1a; color: #fff; width: 300px; }
+.search-box input:focus { outline: none; border-color: #A78BFA; }
+.container { max-width: 960px; margin: 0 auto; padding: 20px; }
+.stats { display: flex; gap: 24px; padding: 16px 0; color: #A78BFA; }
+.workflow-card { background: #1a1a2e; border: 1px solid #2a2a4e; border-radius: 8px; padding: 20px; margin: 12px 0; transition: border-color .2s; }
+.workflow-card:hover { border-color: #7C3AED; }
+.workflow-card h3 { color: #A78BFA; margin-bottom: 6px; font-size: 18px; }
+.workflow-card .version { color: #7C3AED; font-size: 14px; }
+.workflow-card .meta { display: flex; gap: 16px; color: #888; font-size: 13px; margin: 8px 0; }
+.workflow-card .desc { color: #bbb; margin: 8px 0; line-height: 1.5; }
+.tag { display: inline-block; background: #2a1a4e; color: #A78BFA; padding: 2px 10px; border-radius: 12px; font-size: 12px; margin: 2px; }
+.install-cmd { background: #0f0f1a; border: 1px solid #7C3AED; border-radius: 4px; padding: 8px 16px; color: #A78BFA; font-family: monospace; margin-top: 10px; display: inline-block; }
+footer { text-align: center; padding: 40px 0; color: #666; }
+a { color: #A78BFA; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.empty { text-align: center; padding: 60px; color: #666; }
 </style>
 </head>
 <body>
-<h1>🌐 FlowHub</h1>
-<p>Zero-cost workflow marketplace for Shifter. Powered by GitHub.</p>
-<h2>📦 Install a workflow</h2>
-<code>shifter flow install &lt;name&gt;</code>
-<h2>🚀 Publish your workflow</h2>
-<code>shifter flow publish &lt;name&gt;</code>
-<p><a href="https://github.com/Moximxxx/flowhub">View on GitHub</a></p>
-<div id="workflows">Loading...</div>
+<header>
+  <div class="container">
+    <h1>🌐 FlowHub</h1>
+    <div class="search-box">
+      <input id="search" placeholder="Search workflows..." oninput="render()">
+    </div>
+  </div>
+</header>
+<div class="container">
+  <div class="stats" id="stats"></div>
+  <div id="workflows">Loading...</div>
+</div>
+<footer>
+  Install via <code>shifter flow install &lt;name&gt;</code> · 
+  <a href="https://github.com/Moximxxx/flowhub">GitHub</a> · 
+  <a href="https://github.com/Moximxxx/shifter">Shifter</a>
+</footer>
 <script>
-fetch('index.json').then(r=>r.json()).then(d=>{
-  let h='';
-  d.workflows.forEach(w=>{
-    h+=`<div class="card"><h3>📦 ${w.name} <small>v${w.version}</small></h3>
-    <p>${w.description||''}</p>
-    <p>${(w.tags||[]).map(t=>'<span class="tag">'+t+'</span>').join(' ')}</p>
-    <code>shifter flow install ${w.name}</code></div>`;
+let data = {workflows:[]};
+fetch('index.json').then(r=>r.json()).then(d=>{data=d;render();});
+function render(){
+  let q = document.getElementById('search').value.toLowerCase();
+  let filtered = data.workflows.filter(w => !q || w.name.toLowerCase().includes(q) || (w.description||'').toLowerCase().includes(q) || (w.tags||[]).some(t=>t.toLowerCase().includes(q)));
+  filtered.sort((a,b) => b.downloads - a.downloads);
+  document.getElementById('stats').innerHTML = `<span>📦 ${data.workflows.length} workflows</span><span>⭐ Top: ${filtered.length>0?filtered[0].name:'—'}</span>`;
+  let h = '';
+  filtered.forEach(w => {
+    h += `<div class="workflow-card">
+      <h3>${w.name} <span class="version">v${w.version}</span></h3>
+      <div class="meta">
+        <span>👤 ${w.author||'community'}</span>
+        <span>🤖 ${w.agent}</span>
+        <span>⭐ ${w.downloads}</span>
+      </div>
+      ${w.description ? `<div class="desc">${w.description}</div>` : ''}
+      <div>${(w.tags||[]).map(t=>'<span class="tag">'+t+'</span>').join(' ')}</div>
+      <div class="install-cmd">shifter flow install ${w.name}</div>
+    </div>`;
   });
-  document.getElementById('workflows').innerHTML=h||'No workflows yet.';
-});
+  document.getElementById('workflows').innerHTML = h || '<div class="empty">No workflows found. <a href="https://github.com/Moximxxx/shifter#readme">Publish the first one →</a></div>';
+}
 </script>
 </body>
 </html>
